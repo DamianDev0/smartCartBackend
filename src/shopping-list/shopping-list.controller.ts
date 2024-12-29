@@ -22,6 +22,14 @@ export class ShoppingListController {
     );
   }
 
+  @Get('statistics')
+  async getStatisticsForAllLists(
+    @ActiveUser() userActive: ActiveUserInterface,
+  ) {
+    return await this.shoppingListService.getItemStatisticsForAllLists(
+      userActive,
+    );
+  }
   @Get()
   async getAllShoppingLists(@ActiveUser() userActive: ActiveUserInterface) {
     return await this.shoppingListService.getAllShoppingLists(userActive);

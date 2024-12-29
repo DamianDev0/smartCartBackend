@@ -20,7 +20,7 @@ export class ItemService {
     );
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const prompt = `Clasifica este artículo en una categoría adecuada basándote en su nombre. Algunas categorías comunes incluyen: "Frutas", "Verduras", "Lácteos", "Bebidas", "Electrónicos", "Ropa", "Hogar", "Otros". Si el artículo no encaja en ninguna de estas categorías, clasifícalo en una categoría que consideres adecuada. Artículo: ${name}. Devuélveme solo el nombre de la categoría sin comentarios ni texto adicional.`;
+    const prompt = `Classify this item into a suitable category based on its name. Some common categories include: "Fruits", "Vegetables", "Dairy", "Beverages", "Electronics", "Clothing", "Home", "Others". If the item doesn't fit any of these categories, classify it into an appropriate category you consider suitable. Item: ${name}. Return only the name of the category without comments or additional text.`;
     const result = await model.generateContent(prompt);
     return result.response.text().trim();
   }

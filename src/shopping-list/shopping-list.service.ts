@@ -8,6 +8,7 @@ import { CreateItemDto } from 'src/item/dto/create-item.dto';
 import { ItemService } from '../item/item.service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Item } from 'src/item/entities/item.entity';
+import { ItemStatus } from 'src/common/enum/statusItem';
 
 @Injectable()
 export class ShoppingListService {
@@ -136,5 +137,28 @@ export class ShoppingListService {
     userActive: ActiveUserInterface,
   ): Promise<Item[]> {
     return this.itemService.findAllByShoppingList(shoppingListId);
+  }
+
+  async getItemStatisticsForAllLists(
+    userActive: ActiveUserInterface,
+  ): Promise<{ pending: number; purchased: number }> {
+    const result = await this.shoppingListRepository
+      .createQueryBuilder('shoppingList')
+      .innerJoin('shoppingList.items', 'item')
+      .select([
+        `SUM(CASE WHEN item.status = :pending THEN 1 ELSE 0 END) AS pending`,
+        `SUM(CASE WHEN item.status = :purchased THEN 1 ELSE 0 END) AS purchased`,
+      ])
+      .where('shoppingList.user_id = :userId', { userId: userActive.id })
+      .setParameters({
+        pending: ItemStatus.PENDING,
+        purchased: ItemStatus.PURCHASED,
+      })
+      .getRawOne();
+
+    return {
+      pending: parseInt(result.pending || '0', 10),
+      purchased: parseInt(result.purchased || '0', 10),
+    };
   }
 }
