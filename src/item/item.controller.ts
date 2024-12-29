@@ -1,4 +1,13 @@
-import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Body,
+  UseGuards,
+  Patch,
+  Delete,
+} from '@nestjs/common';
 import { ItemService } from './item.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { ActiveUserInterface } from '../common/interface/activeUserInterface';
@@ -14,14 +23,13 @@ export class ItemController {
     private readonly shoppingListService: ShoppingListService,
   ) {}
 
-  @Post(':shoppingListId')
+  @Post()
   async createItemForShoppingList(
-    @Param('shoppingListId') shoppingListId: string,
     @Body() itemData: CreateItemDto,
     @ActiveUser() userActive: ActiveUserInterface,
   ) {
     const shoppingList = await this.shoppingListService.findShoppingListById(
-      shoppingListId,
+      itemData.shoppingListId,
       userActive,
     );
     return await this.itemService.createItemForShoppingList(
@@ -33,5 +41,15 @@ export class ItemController {
   @Get(':shoppingListId')
   async findAllByShoppingList(@Param('shoppingListId') shoppingListId: string) {
     return await this.itemService.findAllByShoppingList(shoppingListId);
+  }
+
+  @Patch(':id') async updateItem(
+    @Param('id') id: string,
+    @Body() updateData: Partial<CreateItemDto>,
+  ) {
+    return await this.itemService.updateItem(id, updateData);
+  }
+  @Delete(':id') async deleteItem(@Param('id') id: string) {
+    return await this.itemService.deleteItem(id);
   }
 }

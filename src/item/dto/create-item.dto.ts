@@ -3,6 +3,9 @@ import { ItemStatus } from '../../common/enum/statusItem';
 
 export class CreateItemDto {
   @IsString()
+  shoppingListId: string;
+
+  @IsString()
   name: string;
 
   @IsString()

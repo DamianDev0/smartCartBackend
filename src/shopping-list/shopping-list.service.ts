@@ -17,29 +17,35 @@ export class ShoppingListService {
     private itemService: ItemService,
   ) {}
 
-  private async suggestItems(context: string): Promise<string> {
+  private async suggestItems(
+    context: string,
+    existingItems: Item[],
+  ): Promise<string> {
     const genAI = new GoogleGenerativeAI(
       'AIzaSyB5N-XIyR1NeDVOlpjkY5DrXhQqVzKXCCk',
     );
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const prompt = `
-      Sugiere una lista de 5 artículos para comprar según este contexto: 
+      Suggest a list of 5 items to buy according to this context: 
       "${context}". 
-      Devuélveme solo los nombres de los artículos como una cadena de texto, separados por comas.
+      Return only the names of the items as a string, separated by commas. The items should be unique and should not include the following items: ${existingItems
+        .map((item) => item.name)
+        .join(', ')}
     `;
 
     const result = await model.generateContent(prompt);
     const text = (await result.response.text()).trim();
 
-    console.log(text);
-
     if (typeof text === 'string') {
-      return text;
-    } else {
-      throw new Error(
-        'La respuesta del modelo de IA no es un texto plano válido.',
+      let items = text.split(',').map((item) => item.trim());
+      items = items.filter(
+        (item) =>
+          !existingItems.some((existingItem) => existingItem.name === item),
       );
+      return items.join(', ');
+    } else {
+      throw new Error('The AI model response is not valid plain text.');
     }
   }
 
@@ -90,6 +96,21 @@ export class ShoppingListService {
     return this.shoppingListRepository.find({
       where: { user: { id: userActive.id } },
       relations: ['items'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
+
+  async getShoppingListNamesAndIds(
+    userActive: ActiveUserInterface,
+  ): Promise<{ id: string; name: string }[]> {
+    return this.shoppingListRepository.find({
+      where: { user: { id: userActive.id } },
+      select: ['id', 'name'],
+      order: {
+        createdAt: 'DESC',
+      },
     });
   }
 
@@ -102,8 +123,7 @@ export class ShoppingListService {
       userActive,
     );
 
-    const itemsContext = shoppingList.items.map((item) => item.name).join(', ');
-    return this.suggestItems(itemsContext);
+    return this.suggestItems(shoppingList.context, shoppingList.items);
   }
 
   async getRecentItems(userActive: ActiveUserInterface): Promise<Item[]> {

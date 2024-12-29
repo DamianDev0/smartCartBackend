@@ -51,6 +51,30 @@ export class ItemService {
       .getMany();
   }
 
+  async deleteItem(id: string): Promise<void> {
+    const item = await this.itemRepository.findOne({ where: { id } });
+
+    if (!item) {
+      throw new Error('Item not found');
+    }
+
+    await this.itemRepository.remove(item);
+  }
+
+  async updateItem(
+    id: string,
+    updateData: Partial<CreateItemDto>,
+  ): Promise<Item> {
+    const item = await this.itemRepository.findOne({ where: { id } });
+
+    if (!item) {
+      throw new Error('Item not found');
+    }
+
+    Object.assign(item, updateData);
+    return this.itemRepository.save(item);
+  }
+
   async getRecentItems(userActive: ActiveUserInterface): Promise<Item[]> {
     return this.itemRepository
       .createQueryBuilder('item')

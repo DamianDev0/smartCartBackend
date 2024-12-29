@@ -27,6 +27,13 @@ export class ShoppingListController {
     return await this.shoppingListService.getAllShoppingLists(userActive);
   }
 
+  @Get('namesAndIds')
+  async getNamesAndIds(@ActiveUser() userActive: ActiveUserInterface) {
+    return await this.shoppingListService.getShoppingListNamesAndIds(
+      userActive,
+    );
+  }
+
   @Get(':id')
   async findShoppingListById(
     @Param('id') id: string,
