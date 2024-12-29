@@ -50,6 +50,11 @@ export class ShoppingListController {
     return await this.shoppingListService.findShoppingListById(id, userActive);
   }
 
+  @Get('items/by-day')
+  async getItemsByDay(@ActiveUser() userActive: ActiveUserInterface) {
+    return await this.shoppingListService.getItemsByDay(userActive);
+  }
+
   @Post(':id/items')
   async addItemToShoppingList(
     @Param('id') shoppingListId: string,

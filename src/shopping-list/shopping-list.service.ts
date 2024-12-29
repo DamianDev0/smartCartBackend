@@ -161,4 +161,30 @@ export class ShoppingListService {
       purchased: parseInt(result.purchased || '0', 10),
     };
   }
+  async getItemsByDay(
+    userActive: ActiveUserInterface,
+  ): Promise<{ date: string; status: string; count: number }[]> {
+    const result = await this.shoppingListRepository
+      .createQueryBuilder('shoppingList')
+      .innerJoin('shoppingList.items', 'item')
+      .select([
+        `DATE(item.createdAt) AS date`,
+        `item.status AS status`,
+        `COUNT(item.id) AS count`,
+      ])
+      .where('shoppingList.user_id = :userId', { userId: userActive.id })
+      .andWhere('item.status IN (:...statuses)', {
+        statuses: [ItemStatus.PENDING, ItemStatus.PURCHASED],
+      })
+      .groupBy('DATE(item.createdAt), item.status')
+      .orderBy('DATE(item.createdAt)', 'ASC')
+      .addOrderBy('item.status', 'ASC')
+      .getRawMany();
+
+    return result.map((row) => ({
+      date: row.date,
+      status: row.status,
+      count: parseInt(row.count, 10),
+    }));
+  }
 }
