@@ -1,4 +1,12 @@
-import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Body,
+  UseGuards,
+  Delete,
+} from '@nestjs/common';
 import { ShoppingListService } from './shopping-list.service';
 import { CreateShoppingListDto } from './dto/create-shopping-list.dto';
 import { CreateItemDto } from '../item/dto/create-item.dto';
@@ -78,7 +86,16 @@ export class ShoppingListController {
       userActive,
     );
   }
-
+  @Delete(':id')
+  async deleteShoppingList(
+    @Param('id') shoppingListId: string,
+    @ActiveUser() userActive: ActiveUserInterface,
+  ) {
+    return await this.shoppingListService.deleteShoppingList(
+      shoppingListId,
+      userActive,
+    );
+  }
   @Get('items/recent')
   async getRecentItems(@ActiveUser() userActive: ActiveUserInterface) {
     return await this.shoppingListService.getRecentItems(userActive);

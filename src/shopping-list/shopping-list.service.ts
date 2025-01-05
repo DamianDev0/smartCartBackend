@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ActiveUserInterface } from 'src/common/interface/activeUserInterface';
@@ -125,6 +125,22 @@ export class ShoppingListService {
     );
 
     return this.suggestItems(shoppingList.context, shoppingList.items);
+  }
+  async deleteShoppingList(
+    shoppingListId: string,
+    userActive: ActiveUserInterface,
+  ): Promise<void> {
+    const shoppingList = await this.shoppingListRepository.findOne({
+      where: { id: shoppingListId },
+      relations: ['user'],
+    });
+
+    if (!shoppingList || shoppingList.user?.id !== userActive.id) {
+      console.error('Forbidden: User does not own the shopping list');
+      throw new ForbiddenException();
+    }
+
+    await this.shoppingListRepository.delete(shoppingListId);
   }
 
   async getRecentItems(userActive: ActiveUserInterface): Promise<Item[]> {
